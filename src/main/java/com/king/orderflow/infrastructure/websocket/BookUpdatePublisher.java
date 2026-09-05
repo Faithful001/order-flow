@@ -1,7 +1,7 @@
 package com.king.orderflow.infrastructure.websocket;
 
 import com.king.orderflow.domain.orderbook.OrderBook;
-import com.king.orderflow.domain.orderbook.dto.PriceLevel;
+import com.king.orderflow.domain.orderbook.PriceLevel;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;

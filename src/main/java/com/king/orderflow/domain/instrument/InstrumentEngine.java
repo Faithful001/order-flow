@@ -1,7 +1,9 @@
-package com.king.orderflow.domain.orderbook;
+package com.king.orderflow.domain.instrument;
 
-import com.king.orderflow.domain.orderbook.enums.OrderSide;
-import com.king.orderflow.domain.orderbook.enums.Trade;
+import com.king.orderflow.domain.order.Order;
+import com.king.orderflow.domain.order.enums.OrderSide;
+import com.king.orderflow.domain.orderbook.OrderBook;
+import com.king.orderflow.shared.Trade;
 
 import java.util.List;
 import java.util.concurrent.*;

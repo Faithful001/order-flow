@@ -1,4 +1,4 @@
-package com.king.orderflow.domain.orderbook;
+package com.king.orderflow.domain.instrument;
 
 import org.springframework.stereotype.Component;
 

@@ -1,8 +1,8 @@
-package com.king.orderflow.domain.orderbook;
+package com.king.orderflow.domain.order;
 
-import com.king.orderflow.domain.orderbook.enums.OrderSide;
-import com.king.orderflow.domain.orderbook.enums.OrderStatus;
-import com.king.orderflow.domain.orderbook.enums.OrderType;
+import com.king.orderflow.domain.order.enums.OrderType;
+import com.king.orderflow.domain.order.enums.OrderSide;
+import com.king.orderflow.domain.order.enums.OrderStatus;
 import lombok.*;
 
 import java.math.BigDecimal;

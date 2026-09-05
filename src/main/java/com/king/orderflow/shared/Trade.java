@@ -1,4 +1,4 @@
-package com.king.orderflow.domain.orderbook.enums;
+package com.king.orderflow.shared;
 
 import java.math.BigDecimal;
 import java.util.UUID;
@@ -8,5 +8,4 @@ public record Trade(
         UUID restingOrderId,
         BigDecimal price,
         BigDecimal quantity
-) {
-}
+) {}

@@ -1,9 +1,9 @@
-package com.king.orderflow.domain.orderbook;
+package com.king.orderflow.domain.order;
 
-import com.king.orderflow.domain.orderbook.dto.PriceLevel;
-import com.king.orderflow.domain.orderbook.dto.SubmitOrderRequest;
-import com.king.orderflow.domain.orderbook.enums.OrderSide;
-import com.king.orderflow.domain.orderbook.enums.Trade;
+import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
+import com.king.orderflow.domain.order.enums.OrderSide;
+import com.king.orderflow.domain.orderbook.PriceLevel;
+import com.king.orderflow.shared.Trade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

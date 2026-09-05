@@ -1,10 +1,10 @@
 package com.king.orderflow.domain.orderbook;
 
-import com.king.orderflow.domain.orderbook.dto.PriceLevel;
-import com.king.orderflow.domain.orderbook.enums.OrderSide;
-import com.king.orderflow.domain.orderbook.enums.OrderStatus;
-import com.king.orderflow.domain.orderbook.enums.OrderType;
-import com.king.orderflow.domain.orderbook.enums.Trade;
+import com.king.orderflow.domain.order.Order;
+import com.king.orderflow.domain.order.enums.OrderSide;
+import com.king.orderflow.domain.order.enums.OrderStatus;
+import com.king.orderflow.domain.order.enums.OrderType;
+import com.king.orderflow.shared.Trade;
 
 import java.math.BigDecimal;
 import java.util.*;
