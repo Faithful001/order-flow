@@ -1,8 +1,8 @@
 package com.king.orderflow.domain.order;
 
+import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
 import com.king.orderflow.domain.order.enums.OrderSide;
-import com.king.orderflow.domain.orderbook.PriceLevel;
 import com.king.orderflow.shared.Trade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,5 +39,4 @@ public class OrderController {
         return ResponseEntity.ok(orderService.getBook(instrument));
     }
 
-    public record BookSnapshot(List<PriceLevel> bids, List<PriceLevel> asks) {}
 }

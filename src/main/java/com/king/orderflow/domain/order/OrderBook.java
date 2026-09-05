@@ -1,6 +1,6 @@
-package com.king.orderflow.domain.orderbook;
+package com.king.orderflow.domain.order;
 
-import com.king.orderflow.domain.order.Order;
+import com.king.orderflow.domain.order.dto.PriceLevel;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
 import com.king.orderflow.domain.order.enums.OrderType;

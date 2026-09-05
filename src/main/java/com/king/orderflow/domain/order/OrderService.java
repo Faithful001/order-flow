@@ -2,10 +2,10 @@ package com.king.orderflow.domain.order;
 
 import com.king.orderflow.domain.instrument.InstrumentEngine;
 import com.king.orderflow.domain.instrument.InstrumentEngineRegistry;
+import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
-import com.king.orderflow.domain.orderbook.OrderBook;
 import com.king.orderflow.shared.Trade;
 import com.king.orderflow.infrastructure.websocket.BookUpdatePublisher;
 import lombok.RequiredArgsConstructor;
@@ -67,10 +67,10 @@ public class OrderService {
         }
     }
 
-    public OrderController.BookSnapshot getBook(String instrument) {
+    public BookSnapshot getBook(String instrument) {
         InstrumentEngine engine = resolveEngine(instrument);
         OrderBook book = engine.getOrderBook();
-        return new OrderController.BookSnapshot(book.bidLevels(), book.askLevels());
+        return new BookSnapshot(book.bidLevels(), book.askLevels());
     }
 
     private InstrumentEngine resolveEngine(String instrument) {
