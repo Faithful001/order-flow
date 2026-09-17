@@ -6,6 +6,7 @@ import com.king.orderflow.domain.order.OrderBook;
 import com.king.orderflow.shared.Trade;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.*;
 
 public class InstrumentEngine {
@@ -21,13 +22,15 @@ public class InstrumentEngine {
 
     public CompletableFuture<List<Trade>> submit(Order order) {
         CompletableFuture<List<Trade>> future = new CompletableFuture<>();
-        incomingOrders.offer(new SubmittedOrder(order, future));
+        SubmittedOrder submittedOrder = new SubmittedOrder(order, future);
+        incomingOrders.offer(submittedOrder);
         return future;
     }
 
-    public CompletableFuture<Boolean> cancel(java.util.UUID orderId, OrderSide side) {
+    public CompletableFuture<Boolean> cancel(UUID orderId, OrderSide side) {
         CompletableFuture<Boolean> future = new CompletableFuture<>();
-        incomingOrders.offer(new SubmittedCancel(orderId, side, future));
+        SubmittedCancel submittedCancelOrder = new SubmittedCancel(orderId, side, future);
+        incomingOrders.offer(submittedCancelOrder);
         return future;
     }
 
