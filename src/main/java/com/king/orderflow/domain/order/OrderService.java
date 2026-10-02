@@ -6,7 +6,7 @@ import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
-import com.king.orderflow.shared.Trade;
+import com.king.orderflow.domain.order.dto.Trade;
 import com.king.orderflow.infrastructure.websocket.BookUpdatePublisher;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

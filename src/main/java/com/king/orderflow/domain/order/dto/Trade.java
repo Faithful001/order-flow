@@ -1,4 +1,4 @@
-package com.king.orderflow.shared;
+package com.king.orderflow.domain.order.dto;
 
 import java.math.BigDecimal;
 import java.util.UUID;

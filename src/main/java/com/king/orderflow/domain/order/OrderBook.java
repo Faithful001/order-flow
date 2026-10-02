@@ -4,7 +4,7 @@ import com.king.orderflow.domain.order.dto.PriceLevel;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
 import com.king.orderflow.domain.order.enums.OrderType;
-import com.king.orderflow.shared.Trade;
+import com.king.orderflow.domain.order.dto.Trade;
 
 import java.math.BigDecimal;
 import java.util.*;

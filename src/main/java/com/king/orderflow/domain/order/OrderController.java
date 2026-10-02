@@ -3,7 +3,7 @@ package com.king.orderflow.domain.order;
 import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
 import com.king.orderflow.domain.order.enums.OrderSide;
-import com.king.orderflow.shared.Trade;
+import com.king.orderflow.domain.order.dto.Trade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

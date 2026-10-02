@@ -3,7 +3,7 @@ package com.king.orderflow.domain.instrument;
 import com.king.orderflow.domain.order.Order;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.OrderBook;
-import com.king.orderflow.shared.Trade;
+import com.king.orderflow.domain.order.dto.Trade;
 
 import java.util.List;
 import java.util.UUID;

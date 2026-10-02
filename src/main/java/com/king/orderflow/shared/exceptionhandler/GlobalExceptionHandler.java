@@ -8,14 +8,17 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.List;
+
 @RestControllerAdvice
 public class GlobalExceptionHandler {
     @ExceptionHandler(ResponseStatusException.class)
-    public ResponseEntity<Response<String>> handleResponseStatusException(ResponseStatusException ex) {
-        return new ResponseEntity<>(
-                Response.error(ex.getMessage(), ex.getStatusCode().value()),
-                HttpStatus.valueOf(ex.getStatusCode().value())
-        );
+    public ResponseEntity<Response<List<String>>> handleResponseStatusException(ResponseStatusException ex) {
+        return ResponseEntity
+                .status(ex.getStatusCode())
+                .body(
+                    Response.error(ex.getMessage(), ex.getStatusCode().value())
+                );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

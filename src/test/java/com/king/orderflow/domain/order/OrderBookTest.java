@@ -3,7 +3,7 @@ package com.king.orderflow.domain.order;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
 import com.king.orderflow.domain.order.enums.OrderType;
-import com.king.orderflow.shared.Trade;
+import com.king.orderflow.domain.order.dto.Trade;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
