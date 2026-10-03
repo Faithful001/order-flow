@@ -18,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
-@AllArgsConstructor
 public class InstrumentService {
     private final InstrumentRepository instrumentRepository;
     private final InstrumentMapper instrumentMapper;
