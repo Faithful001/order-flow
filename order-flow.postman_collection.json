@@ -1,0 +1,408 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "name": "Order Flow API",
+    "description": "Postman collection for the Order Flow API — a limit order book engine with instrument management and real-time WebSocket book updates.\n\nBase URL: {{baseUrl}}\nDefault port: 9000",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:9000",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string",
+      "description": "Set automatically after submitting an order"
+    },
+    {
+      "key": "instrument",
+      "value": "BTC-USD",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Instruments",
+      "description": "Endpoints for managing trading instruments.",
+      "item": [
+        {
+          "name": "Get All Instruments",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/instruments",
+              "host": ["{{baseUrl}}"],
+              "path": ["instruments"]
+            },
+            "description": "Returns a list of all registered trading instruments."
+          },
+          "response": [
+            {
+              "name": "200 OK — All Instruments",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"All instruments\",\n  \"data\": [\n    {\n      \"symbol\": \"BTC-USD\",\n      \"baseCurrency\": \"BTC\",\n      \"quoteCurrency\": \"USD\",\n      \"tickSize\": 0.01,\n      \"minQuantity\": 0.0001,\n      \"status\": \"TRADING\"\n    },\n    {\n      \"symbol\": \"ETH-USD\",\n      \"baseCurrency\": \"ETH\",\n      \"quoteCurrency\": \"USD\",\n      \"tickSize\": 0.01,\n      \"minQuantity\": 0.001,\n      \"status\": \"TRADING\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Instrument by Symbol",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/instruments/{{instrument}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["instruments", "{{instrument}}"]
+            },
+            "description": "Returns a single instrument by its symbol (e.g. BTC-USD)."
+          },
+          "response": [
+            {
+              "name": "200 OK — Instrument Found",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request successful\",\n  \"data\": {\n    \"symbol\": \"BTC-USD\",\n    \"baseCurrency\": \"BTC\",\n    \"quoteCurrency\": \"USD\",\n    \"tickSize\": 0.01,\n    \"minQuantity\": 0.0001,\n    \"status\": \"TRADING\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Instrument not found\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Instrument",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"symbol\": \"BTC-USD\",\n  \"baseCurrency\": \"BTC\",\n  \"quoteCurrency\": \"USD\",\n  \"tickSize\": 0.01,\n  \"minQuantity\": 0.0001\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/instruments",
+              "host": ["{{baseUrl}}"],
+              "path": ["instruments"]
+            },
+            "description": "Creates a new trading instrument.\n\n**Required fields:**\n- `symbol` — Unique ticker symbol (e.g. `BTC-USD`)\n- `baseCurrency` — The base asset (e.g. `BTC`)\n- `quoteCurrency` — The quote asset (e.g. `USD`)\n- `tickSize` — Minimum price increment (must be > 0)\n- `minQuantity` — Minimum order quantity (must be > 0)"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Request successful\",\n  \"data\": {\n    \"symbol\": \"BTC-USD\",\n    \"baseCurrency\": \"BTC\",\n    \"quoteCurrency\": \"USD\",\n    \"tickSize\": 0.01,\n    \"minQuantity\": 0.0001,\n    \"status\": \"TRADING\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"data\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Orders",
+      "description": "Endpoints for submitting, cancelling, and viewing the order book.",
+      "item": [
+        {
+          "name": "Submit Order (LIMIT BUY)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.orderId) {",
+                  "    pm.collectionVariables.set('orderId', json.data.orderId);",
+                  "    console.log('orderId saved:', json.data.orderId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrument\": \"BTC-USD\",\n  \"side\": \"BUY\",\n  \"type\": \"LIMIT\",\n  \"price\": 65000.00,\n  \"quantity\": 0.5\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "Submits a new **LIMIT BUY** order to the order book.\n\nThe test script automatically saves the returned `orderId` to the `{{orderId}}` collection variable for use in the cancel request.\n\n**`side`**: `BUY` | `SELL`\n**`type`**: `LIMIT` | `MARKET`\n**`price`**: Required for LIMIT orders, omit for MARKET orders.\n**`quantity`**: Must be positive."
+          },
+          "response": [
+            {
+              "name": "202 Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Order queued\",\n  \"data\": {\n    \"orderId\": \"550e8400-e29b-41d4-a716-446655440000\"\n  }\n}"
+            },
+            {
+              "name": "400 Bad Request — Validation Error",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Validation failed\",\n  \"data\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Order (LIMIT SELL)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.orderId) {",
+                  "    pm.collectionVariables.set('orderId', json.data.orderId);",
+                  "    console.log('orderId saved:', json.data.orderId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrument\": \"BTC-USD\",\n  \"side\": \"SELL\",\n  \"type\": \"LIMIT\",\n  \"price\": 66000.00,\n  \"quantity\": 0.25\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "Submits a new **LIMIT SELL** order to the order book."
+          },
+          "response": [
+            {
+              "name": "202 Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Order queued\",\n  \"data\": {\n    \"orderId\": \"660e8400-e29b-41d4-a716-446655440001\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Order (MARKET BUY)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const json = pm.response.json();",
+                  "if (json && json.data && json.data.orderId) {",
+                  "    pm.collectionVariables.set('orderId', json.data.orderId);",
+                  "    console.log('orderId saved:', json.data.orderId);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"instrument\": \"BTC-USD\",\n  \"side\": \"BUY\",\n  \"type\": \"MARKET\",\n  \"quantity\": 0.1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/orders",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders"]
+            },
+            "description": "Submits a **MARKET BUY** order. Note that `price` is omitted — market orders execute at the best available price."
+          },
+          "response": [
+            {
+              "name": "202 Accepted",
+              "status": "Accepted",
+              "code": 202,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Order queued\",\n  \"data\": {\n    \"orderId\": \"770e8400-e29b-41d4-a716-446655440002\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Cancel Order",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{orderId}}?instrument={{instrument}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{orderId}}"],
+              "query": [
+                {
+                  "key": "instrument",
+                  "value": "{{instrument}}",
+                  "description": "The instrument symbol the order belongs to (e.g. BTC-USD)"
+                }
+              ]
+            },
+            "description": "Cancels an open order by its UUID.\n\n- Returns `204 No Content` if the order was successfully cancelled.\n- Returns `404 Not Found` if the order does not exist or has already been filled/cancelled.\n\nUses the `{{orderId}}` variable auto-set by the Submit Order test script."
+          },
+          "response": [
+            {
+              "name": "204 No Content — Cancelled",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Get Order Book",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Accept",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/orders/{{instrument}}/book",
+              "host": ["{{baseUrl}}"],
+              "path": ["orders", "{{instrument}}", "book"]
+            },
+            "description": "Returns the current order book snapshot for a given instrument.\n\nResponds with aggregated bid and ask price levels (`price` + `totalQuantity` per level)."
+          },
+          "response": [
+            {
+              "name": "200 OK — Book Snapshot",
+              "status": "OK",
+              "code": 200,
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": "{\n  \"instrument\": \"BTC-USD\",\n  \"bids\": [\n    { \"price\": 65000.00, \"totalQuantity\": 1.25 },\n    { \"price\": 64950.00, \"totalQuantity\": 0.75 },\n    { \"price\": 64900.00, \"totalQuantity\": 2.00 }\n  ],\n  \"asks\": [\n    { \"price\": 65050.00, \"totalQuantity\": 0.50 },\n    { \"price\": 65100.00, \"totalQuantity\": 1.10 },\n    { \"price\": 65200.00, \"totalQuantity\": 3.00 }\n  ]\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
