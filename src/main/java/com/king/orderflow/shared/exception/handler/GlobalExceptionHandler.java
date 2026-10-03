@@ -20,14 +20,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ex.getStatusCode())
                 .body(
-                    Response.error(ex.getMessage(), ex.getStatusCode().value())
+                    Response.error(ex.getMessage())
                 );
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<Response<String>> handleIllegalArgumentException(IllegalArgumentException ex) {
         return new ResponseEntity<>(
-                Response.error(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                Response.error(ex.getMessage()),
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -35,7 +35,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(UnknownInstrumentException.class)
     public ResponseEntity<Response<String>> handleUnknowInstrumentException(UnknownInstrumentException ex) {
         return new ResponseEntity<>(
-                Response.error(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                Response.error(ex.getMessage()),
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -43,7 +43,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InstrumentNotTradingException.class)
     public ResponseEntity<Response<String>> handleInstrumentNotTradingException(InstrumentNotTradingException ex) {
         return new ResponseEntity<>(
-                Response.error(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                Response.error(ex.getMessage()),
                 HttpStatus.BAD_REQUEST
         );
     }
@@ -51,7 +51,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InvalidOrderException.class)
     public ResponseEntity<Response<String>> handleInvalidOrderException(InvalidOrderException ex) {
         return new ResponseEntity<>(
-                Response.error(ex.getMessage(), HttpStatus.BAD_REQUEST.value()),
+                Response.error(ex.getMessage()),
                 HttpStatus.BAD_REQUEST
         );
     }

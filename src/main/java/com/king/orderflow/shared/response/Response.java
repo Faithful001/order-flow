@@ -1,113 +1,46 @@
 package com.king.orderflow.shared.response;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
+@Getter
 public class Response<T> {
-    private boolean success;
-    private String message;
-    private T data;
-    private HttpStatus status;
 
-    public static <T> Response<T> error(String message, HttpStatus status) {
-        Response<T> response = new Response<T>();
-        response.success = false;
-        response.message = message;
-        response.data = null;
-        response.status = status;
+    private static final String DEFAULT_SUCCESS = "Request successful";
+    private static final String DEFAULT_ERROR = "Request unsuccessful";
 
-        return response;
+    private final boolean success;
+    private final String message;
+    private final T data;
+
+    private Response(boolean success, String message, T data) {
+        this.success = success;
+        this.message = message;
+        this.data = data;
     }
 
-    public static <T> Response<T> error(String message) {
-        Response<T> response = new Response<T>();
-        response.success = false;
-        response.message = message;
-        response.data = null;
-        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-
-        return response;
-    }
-
-    public static <T> Response<T> error(HttpStatus status) {
-        Response<T> response = new Response<T>();
-        response.success = false;
-        response.message = "Request unsuccessful";
-        response.data = null;
-        response.status = status;
-
-        return response;
-    }
-
-    public static <T> Response<T> error() {
-        Response<T> response = new Response<T>();
-        response.success = false;
-        response.message = "Request unsuccessful";
-        response.data = null;
-        response.status = HttpStatus.INTERNAL_SERVER_ERROR;
-
-        return response;
-    }
-
-    public static <T> Response<T> success(String message, T data, HttpStatus status) {
-        Response<T> response = new Response<T>();
-        response.success = true;
-        response.message = message;
-        response.data = data;
-        response.status = status;
-
-        return response;
+    public static <T> Response<T> success(T data) {
+        return new Response<>(true, DEFAULT_SUCCESS, data);
     }
 
     public static <T> Response<T> success(String message, T data) {
-        Response<T> response = new Response<T>();
-        response.success = true;
-        response.message = message;
-        response.data = data;
-        response.status = HttpStatus.OK;
-
-        return response;
+        return new Response<>(true, message, data);
     }
 
-    public static <T> Response<T> success(String message) {
-        Response<T> response = new Response<T>();
-        response.success = true;
-        response.message = message;
-        response.data = null;
-        response.status = HttpStatus.OK;
-
-        return response;
+    public static Response<Void> success() {
+        return new Response<>(true, DEFAULT_SUCCESS, null);
     }
 
-    public static <T> Response<T> success() {
-        Response<T> response = new Response<T>();
-        response.success = true;
-        response.message = "Request successful";
-        response.data = null;
-        response.status = HttpStatus.OK;
-
-        return response;
+    public static Response<Void> message(String message) {
+        return new Response<>(true, message, null);
     }
 
-    public static <T> Response<T> success(String message, HttpStatus status) {
-        Response<T> response = new Response<T>();
-        response.success = true;
-        response.message = message;
-        response.data = null;
-        response.status = status;
-
-        return response;
+    public static <T> Response<T> error(String message) {
+        return new Response<>(false, message, null);
     }
 
-    public static <T> Response<T> success(T data, HttpStatus status) {
-        Response<T> response = new Response<T>();
-        response.success = true;
-        response.message = "Request successful";
-        response.data = data;
-        response.status = status;
-
-        return response;
+    public static <T> Response<T> error() {
+        return new Response<>(false, DEFAULT_ERROR, null);
     }
-
-
-
 }

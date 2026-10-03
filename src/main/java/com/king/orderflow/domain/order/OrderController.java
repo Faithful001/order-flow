@@ -26,7 +26,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<Response<Map<String, UUID>>> submit(@Valid @RequestBody SubmitOrderRequest request) {
         UUID orderId = orderService.submit(request);
-        return ResponseEntity.accepted().body(Response.success("Order queued", Map.of("orderId", orderId), HttpStatus.ACCEPTED));
+        return ResponseEntity.accepted().body(Response.success("Order queued", Map.of("orderId", orderId)));
     }
 
     @DeleteMapping("/{orderId}")
