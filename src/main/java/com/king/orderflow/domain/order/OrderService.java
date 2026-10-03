@@ -1,83 +1,112 @@
 package com.king.orderflow.domain.order;
 
+import com.king.orderflow.domain.instrument.Instrument;
 import com.king.orderflow.domain.instrument.InstrumentEngine;
-import com.king.orderflow.domain.instrument.InstrumentEngineRegistry;
+import com.king.orderflow.domain.instrument.InstrumentRepository;
+import com.king.orderflow.domain.instrument.enums.InstrumentStatus;
 import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
-import com.king.orderflow.domain.order.dto.Trade;
+import com.king.orderflow.domain.order.message.OrderCapturedEvent;
+import com.king.orderflow.infrastructure.rabbitmq.OrderEventPublisher;
 import com.king.orderflow.infrastructure.websocket.BookUpdatePublisher;
+import com.king.orderflow.shared.exception.InstrumentNotTradingException;
+import com.king.orderflow.shared.exception.UnknownInstrumentException;
+import jakarta.annotation.PreDestroy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
 public class OrderService {
-
-    private final InstrumentEngineRegistry registry;
+    private final InstrumentRepository instrumentRepository;
+    private final OrderEventPublisher orderEventPublisher;
     private final BookUpdatePublisher bookUpdatePublisher;
 
-    public List<Trade> submit(SubmitOrderRequest request) {
-        Order order = Order.builder()
-                .id(UUID.randomUUID())
-                .instrument(request.instrument())
-                .side(request.side())
-                .type(request.type())
-                .price(request.price())
-                .quantity(request.quantity())
-                .remainingQuantity(request.quantity())
-                .status(OrderStatus.OPEN)
-                .build();
+    private final ConcurrentHashMap<String, InstrumentEngine> engines = new ConcurrentHashMap<>();
 
-        InstrumentEngine engine = registry.getOrCreate(request.instrument());
-
-        try {
-            List<Trade> trades = engine.submit(order).get();
-            bookUpdatePublisher.publish(engine.getOrderBook());
-            return trades;
-        } catch (ExecutionException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getCause().getMessage());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Interrupted while processing order");
+    public UUID submit(SubmitOrderRequest request) {
+        Instrument instrument = requireInstrument(request.instrument());
+        if (instrument.getStatus() != InstrumentStatus.TRADING) {
+            throw new InstrumentNotTradingException(request.instrument());
         }
+
+        UUID orderId = UUID.randomUUID();
+        orderEventPublisher.publish(
+                new OrderCapturedEvent(
+                        orderId,
+                        request.instrument(),
+                        request.side(),
+                        request.type(),
+                        request.price(),
+                        request.quantity()
+                )
+        );
+        return orderId;
     }
 
-    public boolean cancel(UUID orderId, String instrument, OrderSide side) {
-        InstrumentEngine engine = resolveEngine(instrument);
-
-        try {
-            boolean cancelled = engine.cancel(orderId, side).get();
-            if (cancelled) {
-                bookUpdatePublisher.publish(engine.getOrderBook());
-            }
-            return cancelled;
-        } catch (ExecutionException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, e.getCause().getMessage());
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Interrupted while cancelling order");
-        }
+    public CompletableFuture<Boolean> cancel(UUID orderId, String instrument) {
+        requireInstrument(instrument);
+        InstrumentEngine engine = engineFor(instrument);
+        return engine.cancel(orderId)
+                .thenApply(cancelled -> {
+                    if (cancelled) {
+                        bookUpdatePublisher.publish(engine.snapshot());
+                    }
+                    return cancelled;
+                });
     }
 
     public BookSnapshot getBook(String instrument) {
-        InstrumentEngine engine = resolveEngine(instrument);
-        OrderBook book = engine.getOrderBook();
-        return new BookSnapshot(book.bidLevels(), book.askLevels());
+        requireInstrument(instrument);
+        return engineFor(instrument).snapshot();
     }
 
-    private InstrumentEngine resolveEngine(String instrument) {
+    public void process(OrderCapturedEvent event) {
+        Order order = Order.builder()
+                .id(event.orderId())
+                .instrument(event.instrument())
+                .side(event.side())
+                .type(event.type())
+                .price(event.price())
+                .quantity(event.quantity())
+                .remainingQuantity(event.quantity())
+                .status(OrderStatus.OPEN)
+                .build();
+
+        InstrumentEngine engine = engineFor(event.instrument());
+        await(engine.submit(order));
+        bookUpdatePublisher.publish(engine.snapshot());
+    }
+
+    private Instrument requireInstrument(String symbol) {
+        return instrumentRepository.findBySymbol(symbol)
+                .orElseThrow(() -> new UnknownInstrumentException(symbol + " instrument not found"));
+    }
+
+    private InstrumentEngine engineFor(String symbol) {
+        return engines.computeIfAbsent(symbol, InstrumentEngine::new);
+    }
+
+    private <T> void await(CompletableFuture<T> future) {
         try {
-            return registry.get(instrument);
-        } catch (IllegalArgumentException e) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, e.getMessage());
+            future.join();
+        } catch (CompletionException e) {
+            if (e.getCause() instanceof RuntimeException cause) {
+                throw cause;
+            }
+            throw e;
         }
+    }
+
+    @PreDestroy
+    void shutdown() {
+        engines.values().forEach(InstrumentEngine::shutdown);
     }
 }

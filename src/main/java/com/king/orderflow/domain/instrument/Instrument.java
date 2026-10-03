@@ -20,7 +20,7 @@ public class Instrument {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String symbol;
 
     @Column(nullable = false)
@@ -36,7 +36,7 @@ public class Instrument {
     private BigDecimal minQuantity;
 
     @Column(nullable = false)
-    private InstrumentStatus status;
+    private InstrumentStatus status = InstrumentStatus.TRADING;
 
     @Column(nullable = false)
     private Instant createdAt;

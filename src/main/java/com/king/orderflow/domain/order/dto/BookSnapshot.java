@@ -2,5 +2,5 @@ package com.king.orderflow.domain.order.dto;
 
 import java.util.List;
 
-public record BookSnapshot(List<PriceLevel> bids, List<PriceLevel> asks) {
+public record BookSnapshot(String instrument, List<PriceLevel> bids, List<PriceLevel> asks) {
 }

@@ -24,7 +24,7 @@ public class InstrumentController {
 
     @GetMapping("/{symbol}")
     public ResponseEntity<InstrumentResponse> getInstrument(@PathVariable String symbol) {
-        return ResponseEntity.ok(instrumentService.getInstrument(symbol));
+        return ResponseEntity.ok(instrumentService.getInstrumentBySymbol(symbol));
     }
 
     @PostMapping

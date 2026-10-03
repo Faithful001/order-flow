@@ -1,6 +1,7 @@
 package com.king.orderflow.domain.instrument;
 
 import com.king.orderflow.domain.order.Order;
+import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.OrderBook;
 import com.king.orderflow.domain.order.dto.Trade;
@@ -10,66 +11,45 @@ import java.util.UUID;
 import java.util.concurrent.*;
 
 public class InstrumentEngine {
-
+    private final String instrument;
     private final OrderBook orderBook;
-    private final BlockingQueue<QueuedTask> incomingOrders = new LinkedBlockingQueue<>();
-    private final ExecutorService worker = Executors.newSingleThreadExecutor();
+    private final ExecutorService worker;
+    private volatile BookSnapshot snapshot;
 
     public InstrumentEngine(String instrument) {
+        this.instrument = instrument;
         this.orderBook = new OrderBook(instrument);
-        worker.submit(this::processLoop);
+        this.worker = Executors.newSingleThreadExecutor(r -> new Thread(r, "engine-" + instrument));
+        this.snapshot = takeSnapshot();
     }
 
     public CompletableFuture<List<Trade>> submit(Order order) {
-        CompletableFuture<List<Trade>> future = new CompletableFuture<>();
-        SubmittedOrder submittedOrder = new SubmittedOrder(order, future);
-        incomingOrders.offer(submittedOrder);
-        return future;
+        return CompletableFuture.supplyAsync(() -> {
+            List<Trade> trades = orderBook.submit(order);
+            snapshot = takeSnapshot();
+            return trades;
+        }, worker);
     }
 
-    public CompletableFuture<Boolean> cancel(UUID orderId, OrderSide side) {
-        CompletableFuture<Boolean> future = new CompletableFuture<>();
-        SubmittedCancel submittedCancelOrder = new SubmittedCancel(orderId, side, future);
-        incomingOrders.offer(submittedCancelOrder);
-        return future;
-    }
-
-    public OrderBook getOrderBook() {
-        return orderBook;
-    }
-
-    private void processLoop() {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                QueuedTask task = incomingOrders.take();
-                if (task instanceof SubmittedOrder submitted) {
-                    try {
-                        List<Trade> trades = orderBook.submit(submitted.order());
-                        submitted.future().complete(trades);
-                    } catch (Exception e) {
-                        submitted.future().completeExceptionally(e);
-                    }
-                } else if (task instanceof SubmittedCancel cancel) {
-                    try {
-                        boolean result = orderBook.cancel(cancel.orderId(), cancel.side());
-                        cancel.future().complete(result);
-                    } catch (Exception e) {
-                        cancel.future().completeExceptionally(e);
-                    }
-                }
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
+    public CompletableFuture<Boolean> cancel(UUID orderId) {
+        return CompletableFuture.supplyAsync(() -> {
+            boolean cancelled = orderBook.cancel(orderId);
+            if (cancelled) {
+                snapshot = takeSnapshot();
             }
-        }
+            return cancelled;
+        }, worker);
+    }
+
+    public BookSnapshot snapshot() {
+        return snapshot;
     }
 
     public void shutdown() {
-        worker.shutdownNow();
+        worker.shutdown();
     }
 
-    private interface QueuedTask {}
-
-    private record SubmittedOrder(Order order, CompletableFuture<List<Trade>> future) implements QueuedTask {}
-
-    private record SubmittedCancel(java.util.UUID orderId, OrderSide side, CompletableFuture<Boolean> future) implements QueuedTask {}
+    private BookSnapshot takeSnapshot() {
+        return new BookSnapshot(instrument, orderBook.bidLevels(), orderBook.askLevels());
+    }
 }
