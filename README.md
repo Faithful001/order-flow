@@ -506,21 +506,19 @@ Configuration is split between `application.properties` and a `.env` file that s
 | `spring.rabbitmq.port` | Reads `${RABBITMQ_PORT}` from environment |
 | `spring.jpa.hibernate.ddl-auto` | `update` |
 
-**`.env` (example values):**
+**`.env.example`:**
 
 ```env
-DB_URL=jdbc:postgresql://localhost:5441/orderflow_db
-DB_USER=orderflow
-DB_PASSWORD=orderflow321
-DB_NAME=orderflow_db
+DB_URL=jdbc:postgresql://localhost:5441/{your_db_name}
+DB_USER=your_db_username
+DB_PASSWORD=your_db_password
+DB_NAME=your_db_name
 
-RABBITMQ_USER=orderflow
-RABBITMQ_PASSWORD=orderflow321
+RABBITMQ_USER=your_rabbitmq_username
+RABBITMQ_PASSWORD=your_rabbitmq_password
 RABBITMQ_PORT=5674
 RABBITMQ_UI_PORT=15672
 ```
-
-> Do not commit `.env` to source control. Add it to `.gitignore` if it is not already there.
 
 **RabbitMQ topology:**
 
@@ -541,7 +539,23 @@ RABBITMQ_UI_PORT=15672
 - Maven (or use the included `mvnw` wrapper)
 - Docker and Docker Compose
 
-### 1. Start infrastructure
+### 1. Configure environment variables
+
+Copy the example file and adjust the values if needed:
+
+```bash
+cp .env.example .env
+```
+
+On Windows (PowerShell):
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Open `.env` and set your own credentials (database user/password, RabbitMQ user/password). The `.env` file is git-ignored and must never be committed.
+
+### 2. Start infrastructure
 
 ```bash
 docker compose up -d
@@ -551,15 +565,16 @@ This starts:
 - **PostgreSQL** on port `5441` (mapped from container port `5432`)
 - **RabbitMQ** on port `5674` (AMQP) and `15672` (management UI)
 
-### 2. Set environment variables
+### 3. Load the environment variables
 
-Either export the variables from `.env` into your shell, or use a tool like `dotenv`. On most Unix-like shells:
+Export the variables from `.env` into your shell. On most Unix-like shells:
 
 ```bash
-export $(cat .env | xargs)
+set -a && source .env && set +a
 ```
 
 On Windows (PowerShell):
+
 ```powershell
 Get-Content .env | ForEach-Object {
     if ($_ -match "^\s*([^#][^=]+)=(.*)$") {
@@ -568,7 +583,7 @@ Get-Content .env | ForEach-Object {
 }
 ```
 
-### 3. Run the application
+### 4. Run the application
 
 ```bash
 ./mvnw spring-boot:run
@@ -583,7 +598,7 @@ java -jar target/order-flow-0.0.1-SNAPSHOT.jar
 
 The application will be available at `http://localhost:9000/api/v1`.
 
-The RabbitMQ management console is at `http://localhost:15672` (login with the credentials in `.env`).
+The RabbitMQ management console is at `http://localhost:15672` (log in with the credentials you set in `.env`).
 
 ---
 
