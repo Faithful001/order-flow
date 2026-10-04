@@ -30,7 +30,7 @@ OrderFlow is a backend order management and matching system built with Spring Bo
 
 ## Overview
 
-At its heart, OrderFlow maintains one **order book per tradeable instrument**. Each book is a pair of sorted price levels: a **bid side** (buyers, sorted highest price first) and an **ask side** (sellers, sorted lowest price first). When a new order arrives, the engine tries to find a crossing price on the opposite side and fills as much of the order as possible before resting any unfilled remainder back in the book.
+At its core, OrderFlow maintains one **order book per tradeable instrument**. Each book is a pair of sorted price levels: a **bid side** (buyers, sorted highest price first) and an **ask side** (sellers, sorted lowest price first). When a new order arrives, the engine tries to find a crossing price on the opposite side and fills as much of the order as possible before resting any unfilled remainder back in the book.
 
 The system is designed with concurrency in mind. Every instrument gets its own dedicated single-thread executor, which means book mutations for different instruments never block each other, and a single instrument's book is never touched by more than one thread at a time.
 
