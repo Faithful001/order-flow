@@ -6,7 +6,6 @@ import com.king.orderflow.domain.instrument.InstrumentRepository;
 import com.king.orderflow.domain.instrument.enums.InstrumentStatus;
 import com.king.orderflow.domain.order.dto.BookSnapshot;
 import com.king.orderflow.domain.order.dto.SubmitOrderRequest;
-import com.king.orderflow.domain.order.enums.OrderSide;
 import com.king.orderflow.domain.order.enums.OrderStatus;
 import com.king.orderflow.domain.order.message.OrderCapturedEvent;
 import com.king.orderflow.infrastructure.rabbitmq.OrderEventPublisher;
@@ -26,6 +25,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class OrderService {
     private final InstrumentRepository instrumentRepository;
+    private final OrderRepository orderRepository;
     private final OrderEventPublisher orderEventPublisher;
     private final BookUpdatePublisher bookUpdatePublisher;
 
@@ -57,6 +57,11 @@ public class OrderService {
         return engine.cancel(orderId)
                 .thenApply(cancelled -> {
                     if (cancelled) {
+                        orderRepository.findById(orderId)
+                                .ifPresent(order -> {
+                                    order.setStatus(OrderStatus.CANCELLED);
+                                    orderRepository.save(order);
+                                });
                         bookUpdatePublisher.publish(engine.snapshot());
                     }
                     return cancelled;
@@ -80,8 +85,11 @@ public class OrderService {
                 .status(OrderStatus.OPEN)
                 .build();
 
+        orderRepository.save(order);
+
         InstrumentEngine engine = engineFor(event.instrument());
         await(engine.submit(order));
+        orderRepository.save(order);
         bookUpdatePublisher.publish(engine.snapshot());
     }
 
