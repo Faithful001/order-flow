@@ -2,7 +2,6 @@ package com.king.orderflow.domain.instrument;
 
 import com.king.orderflow.domain.instrument.dto.CreateInstrumentRequest;
 import com.king.orderflow.domain.instrument.dto.InstrumentResponse;
-import com.king.orderflow.domain.instrument.enums.InstrumentStatus;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
